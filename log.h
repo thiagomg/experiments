@@ -4,8 +4,8 @@
  *
  * Created on 17 de Maio de 2015, 23:38
  */
- 
- #pragma once
+
+#pragma once
 
 #include <functional>
 #include <sstream>
@@ -14,22 +14,29 @@
 #define _NOEXCEPT noexcept
 #define _TP std::make_tuple 
 
-template<typename T>
+/************
+* StreamPolicy
+* a classe de StreamPolicy precisa de:
+* operador StreamPolicy& operator << T
+* std::string str() 
+************/
+
+template<typename T, typename Stream>
 struct LogFormatter {
-	LogFormatter(std::stringstream &ss, T &t) {
-		ss << t;
+	LogFormatter(Stream &st, T &t) {
+		st << t;
 	}
 };
 
-template<>
-struct LogFormatter<int> {
-	LogFormatter(std::stringstream &ss, int &t) {
-		ss << t << " ";
+template<typename Stream>
+struct LogFormatter<int, Stream> {
+	LogFormatter(Stream &st, int &t) {
+		st << t << " ";
 	}
 };
 
-template<typename T, typename U>
-struct LogFormatter< std::tuple<T, U> > {
+template<typename T, typename U, typename Stream>
+struct LogFormatter< std::tuple<T, U>, Stream> {
 	LogFormatter(std::stringstream &ss, std::tuple<T, U> &t) {
 		const auto &v = std::get<0>(t);
 		auto f = std::get<1>(t);
@@ -37,6 +44,7 @@ struct LogFormatter< std::tuple<T, U> > {
 	}
 };
 
+template<typename StreamPolicy>
 class LogCallback {
 public:
 
@@ -85,13 +93,13 @@ public:
 	//==================================================
 	
 	template <typename T>
-	void _log(std::stringstream &ss, T &t) {
-		LogFormatter<T>(ss, t);
+	void _log(StreamPolicy &st, T &t) {
+		LogFormatter<T, StreamPolicy>(st, t);
 	}
 
 	template <typename T, typename ...U>
-	void _log(std::stringstream &ss, T &t, U&&... p) {
-		LogFormatter<T>(ss, t);
+	void _log(StreamPolicy &ss, T &t, U&&... p) {
+		LogFormatter<T, StreamPolicy>(ss, t);
 		_log(ss, p...);
 	}
 	
@@ -99,7 +107,7 @@ public:
 	void log(Level level, T&&... p) {
 		if( !isLevelEnabled(level) )
 			return;
-		std::stringstream ss;
+		StreamPolicy ss;
 		_log(ss, p...);
 		_logCallback((int)level, ss.str());
 	} 
