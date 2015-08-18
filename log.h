@@ -1,4 +1,11 @@
-#pragma once
+/* 
+ * File:   log.h
+ * Author: Thiago Massari Guedes
+ *
+ * Created on 17 de Maio de 2015, 23:38
+ */
+ 
+ #pragma once
 
 #include <functional>
 #include <sstream>
