@@ -65,6 +65,16 @@ enum class Level : int {
 
 struct LogLevelFmt {
 
+	static const char *getLevel(int value) {
+		union IntToLevel {
+			Level level;
+			int value;
+		};
+		IntToLevel conv;
+		conv.value = value;
+		return getLevel(conv.level);
+	}
+
 	static const char *getLevel(Level level) {
 		// _levelLabel.insert( item((int)Level::OFF,    "OFF ") );
 		// _levelLabel.insert( item((int)Level::ERROR,  "ERRO") );
@@ -125,6 +135,9 @@ public:
 	bool isErrorEnabled() {
 		return Level::ERROR > _logLevel;
 	}
+	bool isAuditEnabled() {
+		return Level::AUDIT > _logLevel;
+	}
 	bool isWarningEnabled() {
 		return Level::WARNING > _logLevel;
 	}
@@ -183,6 +196,12 @@ public:
 			get()->log(Level::ERROR, p...);
 	}
 
+	template <typename ...T>
+	static void audit(T&&... p) {
+		if (get() != nullptr && get()->isErrorEnabled())
+			get()->log(Level::AUDIT, p...);
+	}
+	
 	template <typename ...T>
 	static void debug(T&&... p) {
 		if (get() != nullptr && get()->isDebugEnabled())
