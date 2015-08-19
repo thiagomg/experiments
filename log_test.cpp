@@ -14,8 +14,11 @@
 #include <functional>
 #include <iostream>
 
+#include <iomanip>
+#include <ctime>
 
 using namespace std;
+using namespace BTL::Log;
 
 using Logger = LogCallback<std::stringstream>;
 
@@ -24,8 +27,11 @@ LogCallback<StreamPolicy> *LogCallback<StreamPolicy>::_inst = nullptr;
 
 int main() {
 
-	Logger::init(Logger::Level::ALL_LEVEL, [](int level, const std::string &text) {
-		std::cout << level << ": " << text << std::endl;
+	Logger::init(Level::ALL, [](int level, const std::string &text) {
+		time_t t = std::time(nullptr);
+		std::tm tm = *std::localtime(&t);
+		
+		std::cout << std::put_time(&tm, "%Y-%m-%d %H:%M:%S - ") << level << ": " << text << std::endl;
 	});
 
 	Logger::trace(1, 2, 3, 4, "asdasdas", 1);

@@ -11,6 +11,9 @@
 #include <sstream>
 #include <tuple>
 
+#include <map>
+#include <string>
+
 #define _NOEXCEPT noexcept
 #define _TP std::make_tuple 
 
@@ -21,6 +24,9 @@
 * std::string str() 
 ************/
 
+namespace BTL {
+	namespace Log {
+		
 template<typename T, typename Stream>
 struct LogFormatter {
 	LogFormatter(Stream &st, T &t) {
@@ -44,22 +50,63 @@ struct LogFormatter< std::tuple<T, U>, Stream> {
 	}
 };
 
+enum class Level : int {
+	OFF = 9,
+	ERROR = 8,
+	AUDIT = 7,
+	ADMIN = 6,
+	WARNING = 5,
+	INFO = 4,
+	TRACE = 3,
+	DEBUG = 2,
+	VERBOSE = 1,
+	ALL = 0
+};
+
+struct LogLevelFmt {
+
+	static const char *getLevel(Level level) {
+		// _levelLabel.insert( item((int)Level::OFF,    "OFF ") );
+		// _levelLabel.insert( item((int)Level::ERROR,  "ERRO") );
+		// _levelLabel.insert( item((int)Level::AUDIT,  "AUDT") );
+		// _levelLabel.insert( item((int)Level::ADMIN,  "ADMN") );
+		// _levelLabel.insert( item((int)Level::WARNING,"WARN") );
+		// _levelLabel.insert( item((int)Level::INFO,   "INFO") );
+		// _levelLabel.insert( item((int)Level::TRACE,  "TRCE") );
+		// _levelLabel.insert( item((int)Level::DEBUG,  "DEBG") );
+		// _levelLabel.insert( item((int)Level::ALL,    "ALL ") );
+		switch(level) {
+		case Level::OFF:     return _inst.off;
+		case Level::ERROR:   return _inst.erro;
+		case Level::AUDIT:   return _inst.audt;
+		case Level::ADMIN:   return _inst.admn;
+		case Level::WARNING: return _inst.warn;
+		case Level::INFO:    return _inst.info;
+		case Level::TRACE:   return _inst.trce;
+		case Level::DEBUG:   return _inst.debg;
+		case Level::ALL:     return _inst.all;
+		}
+	}
+
+private:
+
+	static LogLevelFmt _inst;
+
+	const char *off  = "OFF ";
+	const char *erro = "ERRO";
+	const char *audt = "AUDT";
+	const char *admn = "ADMN";
+	const char *warn = "WARN";
+	const char *info = "INFO";
+	const char *trce = "TRCE";
+	const char *debg = "DEBG";
+	const char *all  = "ALL ";
+	
+};
+
 template<typename StreamPolicy>
 class LogCallback {
 public:
-
-	enum class Level : int {
-		OFF_LEVEL = 9,
-		ERROR_LEVEL = 8,
-		AUDIT_LEVEL = 7,
-		ADMIN_LEVEL = 6,
-		WARNING_LEVEL = 5,
-		INFO_LEVEL = 4,
-		TRACE_LEVEL = 3,
-		DEBUG_LEVEL = 2,
-		VERBOSE_LEVEL = 1,
-		ALL_LEVEL = 0
-	};
 
 	using cbFunction = std::function <void(int level, const std::string &text)>;
 
@@ -70,22 +117,22 @@ public:
 
 	//Checks for log level -----------------------------
 	bool isTraceEnabled() {
-		return Level::TRACE_LEVEL > _logLevel;
+		return Level::TRACE > _logLevel;
 	}
 	bool isInfoEnabled() {
-		return Level::INFO_LEVEL > _logLevel;
+		return Level::INFO > _logLevel;
 	}
 	bool isErrorEnabled() {
-		return Level::ERROR_LEVEL > _logLevel;
+		return Level::ERROR > _logLevel;
 	}
 	bool isWarningEnabled() {
-		return Level::WARNING_LEVEL > _logLevel;
+		return Level::WARNING > _logLevel;
 	}
 	bool isDebugEnabled() {
-		return Level::DEBUG_LEVEL > _logLevel;
+		return Level::DEBUG > _logLevel;
 	}
 	bool isVerboseEnabled() {
-		return Level::VERBOSE_LEVEL > _logLevel;
+		return Level::VERBOSE > _logLevel;
 	}
 	bool isLevelEnabled(Level level) {
 		return level >= _logLevel;
@@ -115,37 +162,37 @@ public:
 	template <typename ...T>
 	static void trace(T&&... p) {
 		if (get() != nullptr && get()->isTraceEnabled())
-			get()->log(Level::TRACE_LEVEL, p...);
+			get()->log(Level::TRACE, p...);
 	}
 
 	template <typename ...T>
 	static void info(T&&... p) {
 		if (get() != nullptr && get()->isInfoEnabled())
-			get()->log(Level::INFO_LEVEL, p...);
+			get()->log(Level::INFO, p...);
 	}
 
 	template <typename ...T>
 	static void warn(T&&... p) {
 		if (get() != nullptr && get()->isWarningEnabled())
-			get()->log(Level::WARNING_LEVEL, p...);
+			get()->log(Level::WARNING, p...);
 	}
 
 	template <typename ...T>
 	static void error(T&&... p) {
 		if (get() != nullptr && get()->isErrorEnabled())
-			get()->log(Level::ERROR_LEVEL, p...);
+			get()->log(Level::ERROR, p...);
 	}
 
 	template <typename ...T>
 	static void debug(T&&... p) {
 		if (get() != nullptr && get()->isDebugEnabled())
-			get()->log(Level::DEBUG_LEVEL, p...);
+			get()->log(Level::DEBUG, p...);
 	}
 
 	template <typename ...T>
 	static void verbose(T&&... p) {
 		if (get() != nullptr && get()->isVerboseEnabled())
-			get()->log(Level::VERBOSE_LEVEL, p...);
+			get()->log(Level::VERBOSE, p...);
 	}
 
 	static void init(Level logLevel, cbFunction f) {
@@ -176,3 +223,6 @@ private:
 	Level _logLevel;
 	static LogCallback *_inst;
 };
+
+	}
+}
