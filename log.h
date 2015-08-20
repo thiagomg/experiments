@@ -24,201 +24,45 @@
 * std::string str() 
 ************/
 
+#include "log_formatter.h"
+#include "level.h"
+
 namespace BTL {
 	namespace Log {
 		
-template<typename T, typename Stream>
-struct LogFormatter {
-	LogFormatter(Stream &st, T &t) {
-		st << t;
-	}
-};
-
-template<typename Stream>
-struct LogFormatter<int, Stream> {
-	LogFormatter(Stream &st, int &t) {
-		st << t << " ";
-	}
-};
-
-template<typename T, typename U, typename Stream>
-struct LogFormatter< std::tuple<T, U>, Stream> {
-	LogFormatter(std::stringstream &ss, std::tuple<T, U> &t) {
-		const auto &v = std::get<0>(t);
-		auto f = std::get<1>(t);
-		ss << f(v);
-	}
-};
-
-enum class Level : int {
-	OFF = 9,
-	ERROR = 8,
-	AUDIT = 7,
-	ADMIN = 6,
-	WARNING = 5,
-	INFO = 4,
-	TRACE = 3,
-	DEBUG = 2,
-	VERBOSE = 1,
-	ALL = 0
-};
-
-struct LogLevelFmt {
-
-	static const char *getLevel(int value) {
-		union IntToLevel {
-			Level level;
-			int value;
-		};
-		IntToLevel conv;
-		conv.value = value;
-		return getLevel(conv.level);
-	}
-
-	static const char *getLevel(Level level) {
-		// _levelLabel.insert( item((int)Level::OFF,    "OFF ") );
-		// _levelLabel.insert( item((int)Level::ERROR,  "ERRO") );
-		// _levelLabel.insert( item((int)Level::AUDIT,  "AUDT") );
-		// _levelLabel.insert( item((int)Level::ADMIN,  "ADMN") );
-		// _levelLabel.insert( item((int)Level::WARNING,"WARN") );
-		// _levelLabel.insert( item((int)Level::INFO,   "INFO") );
-		// _levelLabel.insert( item((int)Level::TRACE,  "TRCE") );
-		// _levelLabel.insert( item((int)Level::DEBUG,  "DEBG") );
-		// _levelLabel.insert( item((int)Level::ALL,    "ALL ") );
-		switch(level) {
-		case Level::OFF:     return _inst.off;
-		case Level::ERROR:   return _inst.erro;
-		case Level::AUDIT:   return _inst.audt;
-		case Level::ADMIN:   return _inst.admn;
-		case Level::WARNING: return _inst.warn;
-		case Level::INFO:    return _inst.info;
-		case Level::TRACE:   return _inst.trce;
-		case Level::DEBUG:   return _inst.debg;
-		case Level::ALL:     return _inst.all;
-		}
-	}
-
-private:
-
-	static LogLevelFmt _inst;
-
-	const char *off  = "OFF ";
-	const char *erro = "ERRO";
-	const char *audt = "AUDT";
-	const char *admn = "ADMN";
-	const char *warn = "WARN";
-	const char *info = "INFO";
-	const char *trce = "TRCE";
-	const char *debg = "DEBG";
-	const char *all  = "ALL ";
-	
-};
-
 template<typename StreamPolicy>
-class LogCallback {
+class log_callback {
 public:
 
 	using cbFunction = std::function <void(int level, const std::string &text)>;
 
-	LogCallback(Level lvl, cbFunction f) {
-		_logCallback = f;
-		_logLevel = lvl;
+	log_callback(log_level lvl, cbFunction f) {
+		_log_callback = f;
+		_loglog_level = lvl;
 	}
-
-	//Checks for log level -----------------------------
-	bool isTraceEnabled() {
-		return Level::TRACE > _logLevel;
-	}
-	bool isInfoEnabled() {
-		return Level::INFO > _logLevel;
-	}
-	bool isErrorEnabled() {
-		return Level::ERROR > _logLevel;
-	}
-	bool isAuditEnabled() {
-		return Level::AUDIT > _logLevel;
-	}
-	bool isWarningEnabled() {
-		return Level::WARNING > _logLevel;
-	}
-	bool isDebugEnabled() {
-		return Level::DEBUG > _logLevel;
-	}
-	bool isVerboseEnabled() {
-		return Level::VERBOSE > _logLevel;
-	}
-	bool isLevelEnabled(Level level) {
-		return level >= _logLevel;
-	}
-	//==================================================
 	
+	//Internal log implementation ----------------------
 	template <typename T>
 	void _log(StreamPolicy &st, T &t) {
-		LogFormatter<T, StreamPolicy>(st, t);
+		log_formatter<T, StreamPolicy>(st, t);
 	}
 
 	template <typename T, typename ...U>
 	void _log(StreamPolicy &ss, T &t, U&&... p) {
-		LogFormatter<T, StreamPolicy>(ss, t);
+		log_formatter<T, StreamPolicy>(ss, t);
 		_log(ss, p...);
 	}
 	
 	template <typename ...T>
-	void log(Level level, T&&... p) {
-		if( !isLevelEnabled(level) )
+	void log(log_level level, T&&... p) {
+		if( !is_level_enabled(level) )
 			return;
 		StreamPolicy ss;
 		_log(ss, p...);
-		_logCallback((int)level, ss.str());
+		_log_callback((int)level, ss.str());
 	} 
 
-	template <typename ...T>
-	static void trace(T&&... p) {
-		if (get() != nullptr && get()->isTraceEnabled())
-			get()->log(Level::TRACE, p...);
-	}
-
-	template <typename ...T>
-	static void info(T&&... p) {
-		if (get() != nullptr && get()->isInfoEnabled())
-			get()->log(Level::INFO, p...);
-	}
-
-	template <typename ...T>
-	static void warn(T&&... p) {
-		if (get() != nullptr && get()->isWarningEnabled())
-			get()->log(Level::WARNING, p...);
-	}
-
-	template <typename ...T>
-	static void error(T&&... p) {
-		if (get() != nullptr && get()->isErrorEnabled())
-			get()->log(Level::ERROR, p...);
-	}
-
-	template <typename ...T>
-	static void audit(T&&... p) {
-		if (get() != nullptr && get()->isErrorEnabled())
-			get()->log(Level::AUDIT, p...);
-	}
-	
-	template <typename ...T>
-	static void debug(T&&... p) {
-		if (get() != nullptr && get()->isDebugEnabled())
-			get()->log(Level::DEBUG, p...);
-	}
-
-	template <typename ...T>
-	static void verbose(T&&... p) {
-		if (get() != nullptr && get()->isVerboseEnabled())
-			get()->log(Level::VERBOSE, p...);
-	}
-
-	static void init(Level logLevel, cbFunction f) {
-		_inst = new LogCallback(logLevel,f);
-	}
-
-	static LogCallback *get() {
+	static log_callback *get() {
 		if (_inst == nullptr) {
 
 			struct LogException : public std::exception {
@@ -236,11 +80,87 @@ public:
 			return _inst;
 		}
 	}
+	//==================================================
+	
+	//Checks for log level -----------------------------
+	bool is_trace_enabled() {
+		return log_level::TRACE > _loglog_level;
+	}
+	bool is_info_enabled() {
+		return log_level::INFO > _loglog_level;
+	}
+	bool is_error_enabled() {
+		return log_level::ERROR > _loglog_level;
+	}
+	bool is_audit_enabled() {
+		return log_level::AUDIT > _loglog_level;
+	}
+	bool is_warning_enabled() {
+		return log_level::WARNING > _loglog_level;
+	}
+	bool is_debug_enabled() {
+		return log_level::DEBUG > _loglog_level;
+	}
+	bool is_verbose_enabled() {
+		return log_level::VERBOSE > _loglog_level;
+	}
+	bool is_level_enabled(log_level level) {
+		return level >= _loglog_level;
+	}
+	//==================================================
+
+	//Log external interface ---------------------------
+	template <typename ...T>
+	static void trace(T&&... p) {
+		if (get() != nullptr && get()->is_trace_enabled())
+			get()->log(log_level::TRACE, p...);
+	}
+
+	template <typename ...T>
+	static void info(T&&... p) {
+		if (get() != nullptr && get()->is_info_enabled())
+			get()->log(log_level::INFO, p...);
+	}
+
+	template <typename ...T>
+	static void warn(T&&... p) {
+		if (get() != nullptr && get()->is_warning_enabled())
+			get()->log(log_level::WARNING, p...);
+	}
+
+	template <typename ...T>
+	static void error(T&&... p) {
+		if (get() != nullptr && get()->is_error_enabled())
+			get()->log(log_level::ERROR, p...);
+	}
+
+	template <typename ...T>
+	static void audit(T&&... p) {
+		if (get() != nullptr && get()->is_error_enabled())
+			get()->log(log_level::AUDIT, p...);
+	}
+	
+	template <typename ...T>
+	static void debug(T&&... p) {
+		if (get() != nullptr && get()->is_debug_enabled())
+			get()->log(log_level::DEBUG, p...);
+	}
+
+	template <typename ...T>
+	static void verbose(T&&... p) {
+		if (get() != nullptr && get()->is_verbose_enabled())
+			get()->log(log_level::VERBOSE, p...);
+	}
+
+	static void init(log_level loglog_level, cbFunction f) {
+		_inst = new log_callback(loglog_level,f);
+	}
+	//==================================================
 
 private:
-	cbFunction _logCallback;
-	Level _logLevel;
-	static LogCallback *_inst;
+	cbFunction _log_callback;
+	log_level _loglog_level;
+	static log_callback *_inst;
 };
 
 	}
