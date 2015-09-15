@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <ctime>
 
 namespace BTL {
 	namespace Log {
@@ -46,6 +47,20 @@ namespace BTL {
 			//http://stackoverflow.com/questions/27136854/c11-actual-system-time-with-milliseconds?rq=1
 		}
 		
-		void print_timed_now(const char *level, const std::string &text);		
+		void print_timed_now(const char *level, const std::string &text) {
+	
+			using namespace std::chrono;
+
+			system_clock::time_point now = system_clock::now();
+			system_clock::duration tp = now.time_since_epoch();
+
+			tp -= duration_cast<seconds>(tp);
+			time_t tt = system_clock::to_time_t(now);
+
+			std::tm cur_time = *localtime(&tt);
+			print_timed<std::tm, system_clock::duration>(cur_time, tp, level, text);
+
+		}
+		
 	}
 }

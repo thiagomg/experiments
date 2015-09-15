@@ -14,8 +14,7 @@
 #include <functional>
 #include <iostream>
 
-#include <ctime>
-#include <chrono>
+
 
 using namespace std;
 using namespace std::chrono;
@@ -29,22 +28,6 @@ log_callback<StreamPolicy> *log_callback<StreamPolicy>::_inst = nullptr;
 
 level_format BTL::Log::level_format::_inst;
 
-namespace BTL {
-	namespace Log {
-		
-void print_timed_now(const char *level, const std::string &text) {
-	system_clock::time_point now = system_clock::now();
-	system_clock::duration tp = now.time_since_epoch();
-
-	tp -= duration_cast<seconds>(tp);
-	time_t tt = system_clock::to_time_t(now);
-
-	std::tm cur_time = *localtime(&tt);
-	print_timed<std::tm, system_clock::duration>(cur_time, tp, level, text);
-
-}
-	}
-}
 //=======================================================================
 
 int main() {
