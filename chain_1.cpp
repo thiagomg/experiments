@@ -1,8 +1,13 @@
-#include "stdafx.h"
-
 #include <iostream>
 #include <vector>
 #include <functional>
+
+/***
+ * Objective - create a filter chain 
+ * The shackle must return true to continue processing filters or 
+ * false to stop filtering.
+ * If some changed is needed, the shackle must do it.
+ */
 
 template<typename Return, typename Param>
 struct shackle {
@@ -95,7 +100,7 @@ auto make_processor(ChainListType &reference) -> processor<typename ChainListTyp
 	return processor<typename ChainListType::ChainT>();
 }
 
-int _tmain(int argc, _TCHAR* argv[])
+int main(int argc, char* argv[])
 {
 	std::function<bool(int &)> gt10 = [](int &val) -> bool { return (val > 10); };
 	std::function<bool(int &)> lt10 = [](int &val) -> bool { return (val < 10); };
