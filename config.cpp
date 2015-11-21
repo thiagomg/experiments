@@ -41,24 +41,28 @@ namespace configuration {
 			return it->second;
 		}
 
-		void iterate_thru() {}
+		using adder_func = std::function<void(const std::pair<Key,Value> &pair)>;
+		
+		void iterate_and_check(const Key &prefix, adder_func f_adder) const {
+			std::for_each(begin(_items), end(_items), [&prefix, &f_adder](const std::pair<Key,Value> &pair) {
+				//let's check prefix
+				if( std::equal( begin(prefix), end(prefix), begin(pair.first) ) )
+					f_adder(pair);
+			});
+		}
 		
 		auto prefix(const Key &prefix) const -> std::vector<map_value> {
 			std::vector<map_value> values;
-			std::for_each(begin(_items), end(_items), [&values, &prefix](const std::pair<Key,Value> &pair) {
-				//let's check prefix
-				if( std::equal( begin(prefix), end(prefix), begin(pair.first) ) )
-					values.push_back(pair);
+			iterate_and_check(prefix, [&values](const std::pair<Key,Value> &pair) {
+				values.push_back(pair);				
 			});
 			return values;
 		}		
 
 		auto sufix(const Key &prefix) const -> std::unordered_set<Key> {
 			std::unordered_set<Key> values;
-			std::for_each(begin(_items), end(_items), [&values, &prefix](const std::pair<Key,Value> &pair) {
-				//let's check prefix
-				if( std::equal( begin(prefix), end(prefix), begin(pair.first) ) )
-					values.insert( pair.first.substr( prefix.size() ) );
+			iterate_and_check(prefix, [&values, &prefix](const std::pair<Key,Value> &pair) {
+				values.insert( pair.first.substr( prefix.size() ) );
 			});
 			return values;
 		}
@@ -66,12 +70,9 @@ namespace configuration {
 		auto next_token(const Key &prefix, const typename Key::value_type separator) const -> std::unordered_set<Key> {
 			std::unordered_set<Key> values;
 			int pos = last_of(prefix, separator);
-			std::for_each(begin(_items), end(_items), [&values, &prefix, &pos, &separator](const std::pair<Key,Value> &pair) {
-				//let's check prefix
-				if( std::equal( begin(prefix), end(prefix), begin(pair.first) ) ) {
-					int npos = next_of(pair.first, pos, separator);
-					values.insert( pair.first.substr( pos, npos ) );
-				}
+			iterate_and_check(prefix, [&values, &prefix, &pos, &separator](const std::pair<Key,Value> &pair) {
+				int npos = next_of(pair.first, pos, separator);
+				values.insert( pair.first.substr( pos, npos ) );
 			});
 			return values;
 		}
