@@ -1,12 +1,9 @@
 #include <fstream>
-
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
 #include <functional>
 #include <algorithm>
-
-//using namespace std;
 
 namespace configuration {
 
@@ -24,15 +21,13 @@ namespace configuration {
 
 	template<typename Key = std::string, typename Value = std::string>
 	struct config_holder {
-		
-		//using key = std::string;
-		//using value = std::string;
-		
+				
 		using key_iter = typename Key::const_iterator;
 		using val_iter = typename Value::const_iterator;
 		using key_pair = std::pair<key_iter, key_iter>;
 		using val_pair = std::pair<val_iter, val_iter>;
 		using range = std::pair<key_pair, val_pair>;
+		using config_map = std::unordered_map<Key, Value>;
 		using map_value = typename std::unordered_map<Key,Value>::value_type;
 		
 		auto add_item(key_iter kb, key_iter ke, val_iter vb, val_iter ve) -> void {
@@ -45,6 +40,8 @@ namespace configuration {
 				return _empty;
 			return it->second;
 		}
+
+		void iterate_thru() {}
 		
 		auto prefix(const Key &prefix) const -> std::vector<map_value> {
 			std::vector<map_value> values;
@@ -66,13 +63,9 @@ namespace configuration {
 			return values;
 		}
 		
-		
 		auto next_token(const Key &prefix, const typename Key::value_type separator) const -> std::unordered_set<Key> {
-		//auto next_token(const Key &prefix, char separator) const -> std::unordered_set<Key> {
 			std::unordered_set<Key> values;
-			
 			int pos = last_of(prefix, separator);
-			
 			std::for_each(begin(_items), end(_items), [&values, &prefix, &pos, &separator](const std::pair<Key,Value> &pair) {
 				//let's check prefix
 				if( std::equal( begin(prefix), end(prefix), begin(pair.first) ) ) {
@@ -83,15 +76,18 @@ namespace configuration {
 			return values;
 		}
 		
-	//private:
-		std::unordered_map<Key, Value> _items;
+		auto items() const -> const std::unordered_map<Key, Value> & {
+			return _items;
+		}
+		
+	private:
+		config_map _items;
 		Value _empty;
 		
 	};
 
-	
-	void crack(const std::string &line, char delim, 
-		std::function<void(std::string::const_iterator, std::string::const_iterator, std::string::const_iterator)> f) {
+	template<typename AdderFunc>
+	void crack(const std::string &line, char delim, AdderFunc f) {
 		auto b = std::begin(line);
 		auto e = std::end(line);
 		auto pos = line.find(delim);
@@ -123,7 +119,7 @@ namespace configuration {
 			crack(line, '=', f);
 		}
 		
-		for(auto item : config._items) {
+		for(auto item : config.items()) {
 			std::cout << "Item: [" << item.first << "] => [" << item.second << "]" << std::endl;
 		}
 		
