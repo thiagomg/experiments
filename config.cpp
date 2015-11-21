@@ -2,12 +2,25 @@
 
 #include <iostream>
 #include <unordered_map>
+#include <unordered_set>
 #include <functional>
 #include <algorithm>
 
 //using namespace std;
 
 namespace configuration {
+
+	template<typename Key = std::string>
+	int last_of(const Key &key, const typename Key::value_type c) {
+		auto it = std::find(key.rbegin(), key.rend(), c);
+		return key.size() - std::distance(key.rbegin(), it);
+	}
+	
+	template<typename Key = std::string>
+	int next_of(const Key &key, int start, const typename Key::value_type c) {
+		auto it = std::find(key.begin()+start, key.end(), c);
+		return std::distance(key.begin(), it)-start;
+	}
 
 	template<typename Key = std::string, typename Value = std::string>
 	struct config_holder {
@@ -20,30 +33,59 @@ namespace configuration {
 		using key_pair = std::pair<key_iter, key_iter>;
 		using val_pair = std::pair<val_iter, val_iter>;
 		using range = std::pair<key_pair, val_pair>;
+		using map_value = typename std::unordered_map<Key,Value>::value_type;
 		
-		void add_item(key_iter kb, key_iter ke, val_iter vb, val_iter ve) {
+		auto add_item(key_iter kb, key_iter ke, val_iter vb, val_iter ve) -> void {
 			_items.insert( make_pair(Key(kb, ke), Value(vb, ve)) );
 		}
 		
-		const Value &get(const Key &key) const {
+		auto get(const Key &key) const -> const Value & {
 			auto it = _items.find(key);
 			if( it == _items.end() )
 				return _empty;
-			return *it;
+			return it->second;
 		}
 		
-		std::vector<const Value &> prefix(const Key &prefix) const {
-			std::vector<const Value &> values;
-			std::for_each(begin(_items), end(_items), [&values](auto pair){
-				values.push_back(pair.second);
+		auto prefix(const Key &prefix) const -> std::vector<map_value> {
+			std::vector<map_value> values;
+			std::for_each(begin(_items), end(_items), [&values, &prefix](const std::pair<Key,Value> &pair) {
+				//let's check prefix
+				if( std::equal( begin(prefix), end(prefix), begin(pair.first) ) )
+					values.push_back(pair);
+			});
+			return values;
+		}		
+
+		auto sufix(const Key &prefix) const -> std::unordered_set<Key> {
+			std::unordered_set<Key> values;
+			std::for_each(begin(_items), end(_items), [&values, &prefix](const std::pair<Key,Value> &pair) {
+				//let's check prefix
+				if( std::equal( begin(prefix), end(prefix), begin(pair.first) ) )
+					values.insert( pair.first.substr( prefix.size() ) );
 			});
 			return values;
 		}
 		
 		
+		auto next_token(const Key &prefix, const typename Key::value_type separator) const -> std::unordered_set<Key> {
+		//auto next_token(const Key &prefix, char separator) const -> std::unordered_set<Key> {
+			std::unordered_set<Key> values;
+			
+			int pos = last_of(prefix, separator);
+			
+			std::for_each(begin(_items), end(_items), [&values, &prefix, &pos, &separator](const std::pair<Key,Value> &pair) {
+				//let's check prefix
+				if( std::equal( begin(prefix), end(prefix), begin(pair.first) ) ) {
+					int npos = next_of(pair.first, pos, separator);
+					values.insert( pair.first.substr( pos, npos ) );
+				}
+			});
+			return values;
+		}
+		
 	//private:
 		std::unordered_map<Key, Value> _items;
-		static Value _empty;
+		Value _empty;
 		
 	};
 
@@ -87,13 +129,37 @@ namespace configuration {
 		
 		return config;
 		
-	};
+	}
 
 }
 
 int main() {
 	
 	std::string fname = "example.cfg";
-	configuration::load(fname);
+	auto cfg = configuration::load(fname);
+	
+	const std::string &log_dir = cfg.get(std::string("log.base_dir"));
+	auto plugins = cfg.prefix("plugin.");
+	
+	std::cout << log_dir << std::endl;
+
+	for(auto p : plugins) {
+		std::cout << p.first << "=>" << p.second << std::endl;
+	}
+	std::cout << "--------------" << std::endl;
+
+	auto suf = cfg.sufix("plugin.socket");
+	for(auto p : suf) {
+		std::cout << p << std::endl;
+	}
+	std::cout << "--------------" << std::endl;
+
+	auto tok = cfg.next_token("plugin.socket", '.');
+	for(auto p : tok) {
+		std::cout << p << std::endl;
+	}
+	
+	const std::string &id = cfg.get(std::string("plugin.fix.id"));
+	std::cout << "-> " << id << std::endl;
 	
 }
