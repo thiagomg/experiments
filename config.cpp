@@ -34,6 +34,10 @@ namespace configuration {
 			_items.insert( make_pair(Key(kb, ke), Value(vb, ve)) );
 		}
 		
+		auto add_item(Key &key, Value &val) -> void {
+			_items.insert( make_pair(key, val) );
+		}
+		
 		auto get(const Key &key) const -> const Value & {
 			auto it = _items.find(key);
 			if( it == _items.end() )
@@ -87,18 +91,26 @@ namespace configuration {
 		
 	};
 
-	template<typename AdderFunc>
-	void crack(const std::string &line, char delim, AdderFunc f) {
+	template<typename Key, typename Value, typename AdderFunc>
+	void crack(config_holder<Key, Value> &config, const std::string &line, char delim, AdderFunc f) {
 		auto b = std::begin(line);
 		auto e = std::end(line);
 		auto pos = line.find(delim);
 		if( pos != std::string::npos ) {
-			f(b, b+pos, e);
+			f(config, b, b+pos, e);
 		}
 	}
 	
+	using iter_type = std::string::const_iterator;
+	
+	void default_adder(config_holder<std::string, std::string> &config, iter_type b, iter_type m, iter_type e) {
+		//b-m => key / m+1-e => value
+		config.add_item( b, m, m+1, e );
+	}
+	
 	template<typename Key = std::string, typename Value = std::string>
-	config_holder<Key, Value> load(const std::string &file_name) {
+	config_holder<Key, Value> load(const std::string &file_name, 
+		std::function<void(config_holder<Key, Value> &config, iter_type, iter_type, iter_type)> f = default_adder) {
 		
 		using cfg = config_holder<Key, Value>;
 		cfg config;
@@ -106,39 +118,53 @@ namespace configuration {
 		std::ifstream istr;
 		istr.open(file_name);
 		
-		using iter_type = std::string::const_iterator;
-		std::function<void(iter_type, iter_type, iter_type)> f = [&config](iter_type b, iter_type m, iter_type e) {
-			std::string k(b, m);
-			std::string v(m+1, e);
-			//b-m => key / m+1-e => value
-			config.add_item( b, m, m+1, e );
-		};
-		
 		while( istr.good() )  {
 			std::string line;
 			std::getline(istr, line);
-			crack(line, '=', f);
+			crack(config, line, '=', f);
 		}
-		
-		for(auto item : config.items()) {
-			std::cout << "Item: [" << item.first << "] => [" << item.second << "]" << std::endl;
-		}
-		
+
 		return config;
 		
 	}
 
 }
 
+struct my_value {
+	std::string sval;
+	using const_iterator = std::string::const_iterator;
+};
+
 int main() {
 	
 	std::string fname = "example.cfg";
+	
+	//-------- Using my_value as a value ------------
+	/*
+	using iter_type = std::string::const_iterator;
+	auto cfg = configuration::load<std::string, my_value>(fname, 
+		//[](configuration::config_holder<std::string, my_value> &config, iter_type b, iter_type m, iter_type e) {
+		[](auto &config, iter_type b, iter_type m, iter_type e) {
+			std::string k(b, m);
+			my_value mv;
+			//TODO: Trocar
+			mv.sval = std::string(m+1, e);
+			//b-m => key / m+1-e => value
+			
+			config.add_item( k, mv );
+		});
+	const my_value &log_dir = cfg.get("log.base_dir");
+	std::cout << log_dir.sval << std::endl;
+	*/
+	
+	//-------- Using string as a value --------------
+	//*
 	auto cfg = configuration::load(fname);
 	
-	const std::string &log_dir = cfg.get(std::string("log.base_dir"));
-	auto plugins = cfg.prefix("plugin.");
-	
+	const std::string &log_dir = cfg.get("log.base_dir");
 	std::cout << log_dir << std::endl;
+	
+	auto plugins = cfg.prefix("plugin.");
 
 	for(auto p : plugins) {
 		std::cout << p.first << "=>" << p.second << std::endl;
@@ -158,5 +184,6 @@ int main() {
 	
 	const std::string &id = cfg.get(std::string("plugin.fix.id"));
 	std::cout << "-> " << id << std::endl;
+	//*/
 	
 }
