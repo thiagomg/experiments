@@ -21,7 +21,7 @@ namespace configuration {
 		return std::distance(key.begin(), it)-start;
 	}
 
-	template<typename Key = std::string, typename Value = std::string>
+	template<typename Key = std::string, typename Value = std::string, typename StorePolicy = std::unordered_map<Key, Value>>
 	struct config_holder {
 				
 		using key_iter = typename Key::const_iterator;
@@ -29,7 +29,6 @@ namespace configuration {
 		using key_pair = std::pair<key_iter, key_iter>;
 		using val_pair = std::pair<val_iter, val_iter>;
 		using range = std::pair<key_pair, val_pair>;
-		using config_map = std::unordered_map<Key, Value>;
 		using map_value = typename std::unordered_map<Key,Value>::value_type;
 		
 		auto add_item(key_iter kb, key_iter ke, val_iter vb, val_iter ve) -> void {
@@ -88,7 +87,7 @@ namespace configuration {
 		}
 		
 	private:
-		config_map _items;
+		StorePolicy _items;
 		Value _empty;
 		
 	};
