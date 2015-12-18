@@ -48,14 +48,6 @@ namespace configuration {
 
 		using adder_func = std::function<void(const std::pair<Key,Value> &pair)>;
 		
-		void iterate_and_check(const Key &prefix, adder_func f_adder) const {
-			std::for_each(begin(_items), end(_items), [&prefix, &f_adder](const std::pair<Key,Value> &pair) {
-				//let's check prefix
-				if( std::equal( begin(prefix), end(prefix), begin(pair.first) ) )
-					f_adder(pair);
-			});
-		}
-		
 		auto prefix(const Key &prefix) const -> std::vector<map_value> {
 			std::vector<map_value> values;
 			iterate_and_check(prefix, [&values](const std::pair<Key,Value> &pair) {
@@ -85,7 +77,16 @@ namespace configuration {
 		auto items() const -> const std::unordered_map<Key, Value> & {
 			return _items;
 		}
+	protected:
+		void iterate_and_check(const Key &prefix, adder_func f_adder) const {
+			std::for_each(begin(_items), end(_items), [&prefix, &f_adder](const std::pair<Key,Value> &pair) {
+				//let's check prefix
+				if( std::equal( begin(prefix), end(prefix), begin(pair.first) ) )
+					f_adder(pair);
+			});
+		}
 		
+
 	private:
 		StorePolicy _items;
 		Value _empty;
