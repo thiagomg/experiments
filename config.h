@@ -29,7 +29,7 @@ namespace configuration {
 		using key_pair = std::pair<key_iter, key_iter>;
 		using val_pair = std::pair<val_iter, val_iter>;
 		using range = std::pair<key_pair, val_pair>;
-		using map_value = typename std::unordered_map<Key,Value>::value_type;
+		using map_value = typename StorePolicy::value_type;
 		
 		auto add_item(key_iter kb, key_iter ke, val_iter vb, val_iter ve) -> void {
 			_items.insert( make_pair(Key(kb, ke), Value(vb, ve)) );
@@ -56,7 +56,7 @@ namespace configuration {
 			return values;
 		}		
 
-		auto sufix(const Key &prefix) const -> std::unordered_set<Key> {
+		auto after(const Key &prefix) const -> std::unordered_set<Key> {
 			std::unordered_set<Key> values;
 			iterate_and_check(prefix, [&values, &prefix](const std::pair<Key,Value> &pair) {
 				values.insert( pair.first.substr( prefix.size() ) );
@@ -74,7 +74,7 @@ namespace configuration {
 			return values;
 		}
 		
-		auto items() const -> const std::unordered_map<Key, Value> & {
+		auto items() const -> const StorePolicy & {
 			return _items;
 		}
 	protected:
@@ -110,7 +110,7 @@ namespace configuration {
 		config.add_item( b, m, m+1, e );
 	}
 	
-	template<typename Key = std::string, typename Value = std::string>
+	template<typename Key = std::string, typename Value = std::string, typename StorePolicy = std::unordered_map<Key, Value>>
 	config_holder<Key, Value> load(const std::string &file_name, 
 		std::function<void(config_holder<Key, Value> &config, iter_type, iter_type, iter_type)> f = default_adder) {
 		

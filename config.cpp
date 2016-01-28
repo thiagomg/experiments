@@ -37,22 +37,22 @@ int main() {
 	const std::string &log_dir = cfg.get("log.base_dir");
 	std::cout << log_dir << std::endl;
 	
-	auto plugins = cfg.prefix("plugin.");
+	auto plugins = cfg.prefix("log.");
 
 	for(auto p : plugins) {
 		std::cout << p.first << "=>" << p.second << std::endl;
 	}
 	std::cout << "--------------" << std::endl;
 
-	auto suf = cfg.sufix("plugin.socket");
+	auto suf = cfg.after("plugin.socket");
 	for(auto p : suf) {
 		std::cout << p << std::endl;
 	}
 	std::cout << "--------------" << std::endl;
 
-	auto tok = cfg.next_token("plugin.socket", '.');
+	auto tok = cfg.next_token("plugin.", '.');
 	for(auto p : tok) {
-		std::cout << p << std::endl;
+		std::cout << "Plugins: " << p << std::endl;
 	}
 	
 	const std::string &id = cfg.get(std::string("plugin.fix.id"));
