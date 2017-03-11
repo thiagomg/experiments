@@ -61,6 +61,8 @@ void print1(T &msgs) {
 
 template<typename T>
 void print2(T &msgs) {
+
+	//Thrird possibility
 	for_each(begin(msgs), end(msgs), [](const auto &msg) {
 		PublishMessage(msg);
 	});
@@ -89,5 +91,10 @@ int main() {
 	print2(msgs_sub4); //empty
 	print2(msgs_sub5); //empty
 
+	// //First possibility - unsafe
+	for(auto it = msgs.cbegin()+1; it != msgs.cend()-1; ++it) {
+		PublishMessage(*it);
+	}
+	cout << endl << "==========" << endl;
 	
 }
