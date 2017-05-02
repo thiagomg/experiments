@@ -31,6 +31,3 @@ def shuffle_numbers(nums):
         
     return ret
 
-print shuffle_numbers(range(1, 76))
-#print shuffle_numbers([2, 4, 6, 8, 10, 12])
-#print shuffle_numbers(range(1, 5) + range(6, 10))
