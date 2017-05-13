@@ -1,0 +1,39 @@
+#!/usr/bin/env python
+
+import sys
+import shuffler
+import question
+
+def run():
+    question.write('Welcome to the Thiago\'s super addition practice!', 'purple', 'underline', 'bold')
+    question.write('')
+    
+    number = question.get_number('Choose the number you want to practice addition: ')
+    if number is None:
+        return
+
+    question.write('At any time, write q or quit or exit or leave to leave')
+    
+    operands = shuffler.shuffle_values(range(1, 11))
+
+    count = 0
+    for operand in operands:
+        ret = question.ask_addition_question(number, operand)
+        #ret = question.ask_subtraction_question(number, operand)
+        #ret = question.ask_multiplication_question(number, operand)        
+        if ret == -1:
+            return
+        count += ret
+        question.write('')
+    
+    total = len(operands)
+    if count < (int(total * .7)):
+        question.write('Try harder. You got only ' + str(count) + ' correct answers', 'yellow')
+    else:
+        question.write('Congratulations. You got ' + str(count) + ' correct answers!', 'green')
+    
+    print ''
+    print ''
+    
+run()
+

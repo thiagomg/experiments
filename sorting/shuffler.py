@@ -19,7 +19,7 @@ def get_number(nums, pos):
         nums[pos] = 0
     return n
 
-def shuffle_numbers(nums):
+def shuffle_values(nums):
     import random
     random.seed()
     ret = []
