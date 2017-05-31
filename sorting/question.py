@@ -31,6 +31,15 @@ def set_exit_cond(condition):
     global exit_cond
     exit_cond = condition
 
+def get_char(s, char_list):
+    while( True ):
+        string = raw_input(s)
+        if exit_cond(string):
+            return None
+
+        if string in char_list:
+            return string
+
 def get_number(s):
     while( True ):
         try:

@@ -11,7 +11,10 @@ def run():
     question.write('At any time, write q or quit or exit or leave to leave')
     question.write('')
     
-    words = shuffler.shuffle_values(['Goku', 'Chi chi', 'Vegeta', 'Bulma', 'Gohan', 'Videl', 'Goten'])
+    list_dragon_ball = ['Goku', 'Chi chi', 'Vegeta', 'Bulma', 'Gohan', 'Videl', 'Goten']
+    list_1 = ['call', 'word', 'why', 'people', 'what', 'were', 'where', 'when', 'first', 'who', 'many', 'all']
+    
+    words = shuffler.shuffle_values(list_1)
 
     for word in words:
         ret = question.ask_word_question(word)

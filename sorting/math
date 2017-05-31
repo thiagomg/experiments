@@ -5,10 +5,28 @@ import shuffler
 import question
 
 def run():
-    question.write('Welcome to the Thiago\'s super addition practice!', 'purple', 'underline', 'bold')
+    
+    name = None
+    operation = None
+    
+    math_type = question.get_char('Choose +, - or x: ', ['+', '-', 'x'])
+    if math_type is None:
+        return
+        
+    if math_type == '+':
+        name = 'addition'
+        operation = question.ask_addition_question
+    elif math_type == '-':
+        name = 'subtraction'
+        operation = question.ask_subtraction_question
+    elif math_type == 'x':
+        name = 'multiplication'
+        operation = question.ask_multiplication_question
+    
+    question.write('Welcome to the Thiago\'s super ' + name + ' practice!', 'purple', 'underline', 'bold')
     question.write('')
     
-    number = question.get_number('Choose the number you want to practice addition: ')
+    number = question.get_number('Choose the number you want to practice ' + name + ': ')
     if number is None:
         return
 
@@ -18,9 +36,7 @@ def run():
 
     count = 0
     for operand in operands:
-        ret = question.ask_addition_question(number, operand)
-        #ret = question.ask_subtraction_question(number, operand)
-        #ret = question.ask_multiplication_question(number, operand)        
+        ret = operation(number, operand)
         if ret == -1:
             return
         count += ret
