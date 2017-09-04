@@ -1,3 +1,7 @@
+//Sample provided by Thiago Massari Guedes
+//September 2017
+//http://www.simplycpp.com
+
 #include <iostream>
 #include <vector>
 #include <thread>
