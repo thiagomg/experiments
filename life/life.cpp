@@ -55,7 +55,7 @@ struct matrix_view {
     const int _x, _y;
     const int cols, rows;
     
-    matrix_view(matrix<int> &data, int x, int y, int cols, int rows) :
+    matrix_view(matrix<Type> &data, int x, int y, int cols, int rows) :
     _data(data), _x(x), _y(y), cols(cols), rows(rows) { }
     
     Type _get_x(int x) const {
@@ -78,6 +78,7 @@ struct matrix_view {
     
 };
 
+//life_counter and life_rule are specific to int type.
 struct life_counter {
     int operator() (matrix_view<int> &mv) {
         int total = 0;  
