@@ -176,6 +176,7 @@ void fill_random(matrix<int> &m) {
     
 }
 
+//Used for debugging
 void fill_line(matrix<int> &v) {
     matrix_view<int> mv = get_surrounding(v, 2, 2);
     mv(1, 0) = 1;
