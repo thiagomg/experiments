@@ -1,6 +1,8 @@
 //Sample provided by Thiago Massari Guedes
 //September 2017
 //http://www.simplycpp.com
+//
+//Compile: g++ -std=c++17 -o life life.cpp
 
 #include <iostream>
 #include <vector>
@@ -12,10 +14,12 @@
 
 //Please use random access iterator
 template<typename Type, typename Storage=std::vector<Type>>
-class matrix {
-public:
+struct matrix {
+
+    using value_type = Type;
+    
     Storage data;
-    int cols, rows;
+    int cols, rows;    
     
     matrix(int cols, int rows) : data(cols*rows), cols(cols), rows(rows) { }
     
@@ -78,6 +82,38 @@ struct matrix_view {
     
 };
 
+//The life processor don't know cell types. It's the processor and counter dependent
+template <typename Rule, typename Counter, typename CellType>
+struct life_processor {
+    
+    matrix<CellType> _nm;
+    Rule rule;
+    Counter counter;
+    
+    life_processor(const matrix<CellType> &v) : _nm(v.cols, v.rows) {
+    }
+  
+
+    matrix<CellType> step(matrix<CellType> &m) {
+        
+        for(int y=0; y < m.rows; ++y) {
+            for(int x=0; x < m.cols; ++x) {
+                auto mv = get_surrounding(m, x, y);
+                int count = counter(mv);
+                
+                //Let's apply the rules
+                _nm(x, y) = rule(mv, count);                
+            }
+        }
+        
+	std::swap(m, _nm);
+        
+        return std::move(m);
+    }
+    
+};
+
+
 //life_counter and life_rule are specific to int type.
 struct life_counter {
     int operator() (matrix_view<int> &mv) {
@@ -134,36 +170,6 @@ matrix_view<T> get_surrounding(matrix<T> &data, int x, int y) {
     return std::move(mv);
 }
 
-template <typename Rule, typename Counter>
-struct life_processor {
-    
-    matrix<int> _nm;
-    Rule rule;
-    Counter counter;
-    
-    life_processor(const matrix<int> &v) : _nm(v.cols, v.rows) {
-    }
-  
-
-    matrix<int> step(matrix<int> &m) {
-        
-        for(int y=0; y < m.rows; ++y) {
-            for(int x=0; x < m.cols; ++x) {
-                auto mv = get_surrounding(m, x, y);
-                int count = counter(mv);
-                
-                //Let's apply the rules
-                _nm(x, y) = rule(mv, count);                
-            }
-        }
-        
-	std::swap(m, _nm);
-        
-        return std::move(m);
-    }
-    
-};
-
 void fill_random(matrix<int> &m) {
     
     std::random_device rd;
@@ -178,11 +184,13 @@ void fill_random(matrix<int> &m) {
 }
 
 //Used for debugging
-void fill_line(matrix<int> &v) {
+void fill_walker(matrix<int> &v) {
     matrix_view<int> mv = get_surrounding(v, 2, 2);
     mv(1, 0) = 1;
-    mv(1, 1) = 1;
+    mv(2, 1) = 1;
+    mv(0, 2) = 1;
     mv(1, 2) = 1;
+    mv(2, 2) = 1;
 }
 
 template<typename T>
@@ -203,6 +211,12 @@ void show_matrix(T &v) {
     std::this_thread::sleep_for(150ms);
 }
 
+template<typename Type>
+life_processor<life_rule, life_counter, Type> get_life(matrix<Type> &matrix) {
+    life_processor<life_rule, life_counter, Type> life(matrix);
+    return std::move(life);
+}
+
 int main(int argc, char **argv) {
     
     int cols = 60;
@@ -212,7 +226,7 @@ int main(int argc, char **argv) {
         
     fill_random(v);
     
-    life_processor<life_rule, life_counter> life(v);
+    auto life = get_life(v);
     while(true) {
         show_matrix(v);
         v = life.step(v);
