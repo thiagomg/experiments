@@ -43,7 +43,7 @@ struct matrix {
         return data[_get_pos(x,y)];
     }
     
-    int operator() (int x, int y) const {
+    const Type& operator() (int x, int y) const {
         return data[_get_pos(x,y)];
     }
     
@@ -208,7 +208,7 @@ void show_matrix(T &v) {
         std::cout << std::endl;
     }
     using namespace std::chrono_literals;
-    std::this_thread::sleep_for(150ms);
+    std::this_thread::sleep_for(1000ms);
 }
 
 template<typename Type>
@@ -225,6 +225,7 @@ int main(int argc, char **argv) {
     matrix<int> v(cols, rows);
         
     fill_random(v);
+    //fill_walker(v);
     
     auto life = get_life(v);
     while(true) {
