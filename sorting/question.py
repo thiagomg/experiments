@@ -1,5 +1,9 @@
 import sys
 
+#compatibility
+try: input = raw_input
+except NameError: pass
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -33,25 +37,34 @@ def set_exit_cond(condition):
 
 def get_char(s, char_list):
     while( True ):
-        string = raw_input(s)
+        string = input(s)
         if exit_cond(string):
             return None
 
         if string in char_list:
             return string
 
-def get_number(s):
+def get_number(s, max_val=None):
+
     while( True ):
         try:
-            string = raw_input(s)
+            string = input(s)
             if exit_cond(string):
                 return None
-            return int(string)
+            val = int(string)
+            if max_val is None or val <= max_val:
+                return val
         except:
-            print 'Not a number. Try again'
+            print ('Not a number. Try again')
             
+def get_string(s):
+    string = input(s)
+    if exit_cond(string):
+        return None
+    return string
+
 def get_word(s):
-    string = raw_input(s)
+    string = input(s)
     if exit_cond(string):
         return False
     return True
@@ -63,10 +76,10 @@ def ask_addition_question(m, n):
             return -1
         
         if result == (m+n):
-            print 'Correct !'
+            print ('Correct !')
             return 1
         else:
-            print 'Wrong. try again!'
+            print ('Wrong. try again!')
             
     return 0
     
@@ -77,10 +90,10 @@ def ask_multiplication_question(m, n):
             return -1
         
         if result == (m*n):
-            print 'Correct !'
+            print ('Correct !')
             return 1
         else:
-            print 'Wrong. try again!'
+            print ('Wrong. try again!')
             
     return 0
     
@@ -93,10 +106,10 @@ def ask_subtraction_question(m, n):
             return -1
         
         if result == (m-n):
-            print 'Correct !'
+            print ('Correct !')
             return 1
         else:
-            print 'Wrong. try again!'
+            print ('Wrong. try again!')
             
     return 0
     
@@ -115,5 +128,5 @@ def write(text, color=None, *attrib):
     if len(prefix) > 0:
         sufix = colors['NONE']
 
-    print prefix + text + sufix
+    print (prefix + text + sufix)
     
