@@ -35,15 +35,16 @@ def run():
         multiplier *= 10
         no_digits -= 1
         
-    number_range1 = range(1 * multiplier, multiplier*10) #Ex: 10..100
-    number_range2 = range(1 * multiplier, multiplier*10) #Ex: 10..100
+    number_range1 = range(1 * multiplier, multiplier*10 + 1) #Ex: 10..100
+    number_range2 = range(1 * multiplier, multiplier*10 + 1) #Ex: 10..100
     operands1 = shuffler.shuffle_values(number_range1)
     operands2 = shuffler.shuffle_values(number_range2)
 
     question.write('At any time, write q or quit or exit or leave to leave')
     
     count = 0
-    questions_range = range(1, 11)
+    questions_range = range(0, 10)
+   
     for position in questions_range:
         operand1 = operands1[position]
         operand2 = operands2[position]
