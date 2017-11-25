@@ -9,7 +9,7 @@
   (diff-dates bday cur-date))
 
 (define (get-last-bday bday cur-date)
-  (let* ([last-bday
+  (let ([last-bday
           (date (->year cur-date) (->month bday) (->day bday))])
     (if (date>? last-bday cur-date)
         (date (- (->year cur-date) 1) (->month bday) (->day bday))
