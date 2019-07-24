@@ -1,0 +1,12 @@
+(import [fractions [Fraction]])
+(import question)
+
+(print (Fraction 5 2))
+
+(setv s (question.get_string "Type a fraction to solve: "))
+(print (.split s "/"))
+
+; if size=2 and two are numbers
+
+; generate fraction and show
+

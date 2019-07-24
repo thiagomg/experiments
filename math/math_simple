@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+
+import sys
+import shuffler
+import question
+
+def run():
+    
+    name = None
+    operation = None
+    
+    math_type = question.get_char('Choose +, - or x: ', ['+', '-', 'x'])
+    if math_type is None:
+        return
+        
+    if math_type == '+':
+        name = 'addition'
+        operation = question.ask_addition_question
+    elif math_type == '-':
+        name = 'subtraction'
+        operation = question.ask_subtraction_question
+    elif math_type == 'x':
+        name = 'multiplication'
+        operation = question.ask_multiplication_question
+
+    question.write('Welcome to the Thiago\'s super ' + name + ' practice!', 'purple', 'underline', 'bold')
+    question.write('')
+
+    number = question.get_number('Choose the number you want to practice ' + name + ': ')
+    if number is None:
+        return
+
+    lower_bound = 1
+    upper_bound = 11 # 10+1 - exclusive
+    number_range = shuffler.shuffle_values(range(lower_bound, upper_bound))
+
+    count = 0
+    no_questions = len(number_range)
+    for position in range(0, no_questions):
+        operand = number_range[position-1]
+        ret = operation(number, operand)
+        if ret == -1:
+            return
+        count += ret
+        question.write('')
+    
+    total = len(number_range)
+    if count < (int(total * .7)):
+        question.write('Try harder. You got only ' + str(count) + ' correct answers', 'yellow')
+    else:
+        question.write('Congratulations. You got ' + str(count) + ' correct answers!', 'green')
+    
+    print ('')
+    print ('')
+    
+run()
+

@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+
+import sys
+import shuffler
+import question
+
+def run():
+    
+    name = None
+    operation = None
+    
+    math_type = question.get_char('Choose +, - or x: ', ['+', '-', 'x'])
+    if math_type is None:
+        return
+        
+    if math_type == '+':
+        name = 'addition'
+        operation = question.ask_addition_question
+    elif math_type == '-':
+        name = 'subtraction'
+        operation = question.ask_subtraction_question
+    elif math_type == 'x':
+        name = 'multiplication'
+        operation = question.ask_multiplication_question
+
+    question.write('Welcome to the Thiago\'s super ' + name + ' practice!', 'purple', 'underline', 'bold')
+    question.write('')
+
+    no_digits = question.get_number('Tell me how many digits: ', 4)
+    if no_digits is None:
+        return
+
+    multiplier = 1
+    while( no_digits > 1 ):
+        multiplier *= 10
+        no_digits -= 1
+        
+    number_range1 = range(1 * multiplier, multiplier*10 + 1) #Ex: 10..100
+    number_range2 = range(1 * multiplier, multiplier*10 + 1) #Ex: 10..100
+    operands1 = shuffler.shuffle_values(number_range1)
+    operands2 = shuffler.shuffle_values(number_range2)
+
+    question.write('At any time, write q or quit or exit or leave to leave')
+    
+    count = 0
+    questions_range = range(0, 10)
+   
+    for position in questions_range:
+        operand1 = operands1[position]
+        operand2 = operands2[position]
+        ret = operation(operand1, operand2)
+        if ret == -1:
+            return
+        count += ret
+        question.write('')
+    
+    total = len(questions_range)
+    if count < (int(total * .7)):
+        question.write('Try harder. You got only ' + str(count) + ' correct answers', 'yellow')
+    else:
+        question.write('Congratulations. You got ' + str(count) + ' correct answers!', 'green')
+    
+    print ''
+    print ''
+    
+run()
+
