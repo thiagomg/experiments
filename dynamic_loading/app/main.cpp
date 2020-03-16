@@ -4,11 +4,10 @@
 
 int main(int argc, char **argv) {
     stateful_writer w;
-    w.write("Thiago");
-    w.write("Massari");
-    w.write("Guedes");
+    w.write("We're all stories");
+    w.write("in the end");
 
-    std::cout << "how: " << w.increment(1) << std::endl;
-    std::cout << "how: " << w.increment(2) << std::endl;
-    std::cout << "how: " << w.increment(3) << std::endl;
+    std::cout << "how much: " << w.increment(10) << std::endl;
+    std::cout << "how much: " << w.increment(10) << std::endl;
+    std::cout << "how much: " << w.increment(10) << std::endl;
 }
